@@ -11,6 +11,7 @@ const accessLogs = fs.createWriteStream(path.join('./logs/', `request-${moment()
 server.use(morgan('combined', { stream: accessLogs }));
 
 server.get('/', (req, res) => {
+    console.log("aicommits")
     res.send('Hi');
 })
 
