@@ -1,6 +1,6 @@
 import { dotenv, express, morgan, fs, path, moment, cors, expressjwt } from "./src/config/index.js";
-import { corsDomains } from "./src/config/cors.js";
-import { exceptions } from "./src/routes/exceptions.js";
+import { corsDomains } from "./src/config/Cors.js";
+import { exceptions } from "./src/routes/Exceptions.js";
 
 dotenv.config();
 
@@ -21,13 +21,23 @@ server.use(morgan('combined', { stream: accessLogs }));
 server.use(express.urlencoded({ extended: true }))
 
 // Deploy server
-server.use(
-    '/v1',
-    expressjwt({ secret: process.env.KEY, algorithms: ['HS256'] }).unless({ path: exceptions }),
-    (req, res) => {
-        res.send('HelloWorld');
+const RoutePath = path.join(path.resolve(), './src/routes');
+
+fs.readdirSync(RoutePath).forEach(async(routeFile) => {
+    const file = path.join(RoutePath, routeFile);
+    try {
+        const item = await
+        import (file);
+        server.use(
+            '/',
+            expressjwt({ secret: process.env.KEY, algorithms: ['HS256'] }).unless({ path: exceptions }),
+            item.default
+        );
+    } catch (error) {
+        console.log(error.message);
     }
-)
+});
+
 server.listen(port, () => {
     console.log(`Express launched on port [${port}] `)
 })
